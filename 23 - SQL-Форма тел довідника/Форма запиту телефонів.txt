@@ -1,0 +1,100 @@
+Відкрити базу телефонів і створити запит!
+=============================================================
+$db_conn = mysqli_connect("localhost", "root", "1", "tel09");
+mysqli_set_charset($db_conn, 'utf8');
+
+$rez = "SELECT * FROM tel09 WHERE ";
+$stre = "SELECT * FROM street WHERE ";
+
+$r1 = 0;
+$num = 0;
+
+$ntel = $_POST['ntel'];
+$fio = $_POST['fio'];
+$street = $_POST['street'];
+$ndom = $_POST['ndom'];
+
+if ($fio != ""):
+$fio = strtoupper($fio);
+     $r1 = 1;
+     $rez = "$rez a_name LIKE '$fio%'";
+endif;
+
+if ($street != 0):
+  if ($r1 == 1):
+     $rez = "$rez AND";
+  endif;
+     $r1 = 1;
+     $rez = " $rez street = $street";
+endif;
+
+if ($ndom != ""):
+  if ($r1 == 1):
+     $rez = "$rez AND";
+  endif;
+     $r1 = 1;
+     $rez = " $rez house LIKE '$ndom%'";
+endif;
+
+if ($ntel != ""):
+$ntel = str_replace("-", "", $ntel);
+  if ($r1 == 1):
+     $rez = "$rez AND";
+  endif;
+     $r1 = 1;
+     $rez = " $rez phone LIKE '%$ntel%'";
+endif;
+----------------------------------------------------------------------
+
+
+Результат пошуку.....
+======================================================================
+if (!$db_conn):
+    echo "<strong>";
+    echo "База даних тимчасово не працює.<br>";
+    echo "<hr></strong>";
+else:
+       if ($r1 == 1):
+		$result = mysqli_query($db_conn,$rez) or die("Query failed1");
+		$num = mysqli_num_rows($result);
+       endif;
+endif;
+
+       $i = 0;
+    if ($num == 0 OR $r1 == 0){
+	echo "<hr><center><strong>";
+	echo "Книга не мiстить жодного запису.<br>";
+	echo "</strong></center>";
+} else {
+
+$i = 0;
+    if ($num > 500){
+                $num = 500;
+	echo "<hr><center><strong>";
+	echo "Ви не вiрно вказали данi для запиту.<br>";
+	echo "Кiлькiсть записiв перевищує 500.<br>";
+	echo "</strong></center>";}
+    else  {
+	echo "<hr><center><strong>";
+	echo "Знайдено $num записів.<br>";
+	echo "</strong></center>";}
+	}
+		echo "<CENTER><table border=3 color=red><tr>";
+		echo "<th><b><font size=+1 color=#006600>Прiзвище</font></b></th>";
+		echo "<th><b><font size=+1 color=#006600>Телефон</font></b></th>";
+		echo "<th><b><font size=+1 color=#006600>Адреса</font></b></th>";
+		
+ while ($line = mysqli_fetch_array($result, MYSQLI_NUM)){
+
+echo "<tr><td><b>&nbsp;&nbsp;&nbsp;&nbsp;".$line[1];
+echo "</b></td><td><b>&nbsp;&nbsp;&nbsp;&nbsp;".$line[0];
+
+$st1="SELECT * FROM street WHERE n_street=".$line[2];
+$res_st = mysqli_query($db_conn,$st1) or die("Query failed");
+$lst = mysqli_fetch_array($res_st, MYSQLI_NUM);
+
+echo "</b></td><td><b>&nbsp;&nbsp;&nbsp;&nbsp;".$lst[1]."&nbsp;&nbsp;буд.".$line[3]." кв. ".$line[4];
+
+}
+echo "</b></table></CENTER>";
+===============================================================================
